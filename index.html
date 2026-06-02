@@ -117,6 +117,17 @@
     .setlist-name-row{display:flex;gap:10px;align-items:center;}
     .setlist-name-row input{flex:1;}
 
+    /* 使い方パネル */
+    .help-section{margin-bottom:20px;}
+    .help-section h2{font-size:16px;font-weight:800;color:var(--neon);margin:0 0 10px;letter-spacing:.04em;border-bottom:1px solid rgba(0,255,204,0.2);padding-bottom:8px;}
+    .help-step{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05);}
+    .help-step:last-child{border-bottom:none;}
+    .help-num{width:28px;height:28px;border-radius:50%;background:var(--neon);color:#000;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+    .help-step-body{flex:1;}
+    .help-step-title{font-size:15px;font-weight:700;margin-bottom:3px;}
+    .help-step-desc{font-size:13px;color:rgba(255,255,255,0.6);line-height:1.6;}
+    .help-tag{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:700;background:rgba(0,255,204,0.15);color:var(--neon);border:1px solid rgba(0,255,204,0.3);margin-right:4px;white-space:nowrap;}
+    .help-tag.red{background:rgba(255,60,60,0.15);color:#ff6b6b;border-color:rgba(255,60,60,0.3);}
     @media (max-width:960px){main{flex-direction:column;} .practice-next{font-size:6vw;}}
   </style>
 </head>
@@ -130,6 +141,7 @@
       <button class="tab-button active" id="tab-practice">Play</button>
       <button class="tab-button" id="tab-record">Edit</button>
       <button class="tab-button" id="tab-setlist">SetList</button>
+      <button class="tab-button" id="tab-help">Help</button>
     </div>
   </header>
 
@@ -185,14 +197,14 @@
           <button id="tap-btn">次の歌詞へ...</button>
         </div>
 
-        <div>
-          <label>記録ログ</label>
-          <div class="log" id="log-area"></div>
-        </div>
-
         <div class="controls" style="justify-content:flex-end;">
           <button id="save-record">記録を保存</button>
           <button id="back-setup" class="ghost secondary">キャンセル</button>
+        </div>
+
+        <div>
+          <label>記録ログ</label>
+          <div class="log" id="log-area"></div>
         </div>
       </div>
     </section>
@@ -289,6 +301,118 @@
       <button id="save-setlist-btn" style="width:100%;">SetListを保存</button>
 
     </section>
+    <!-- 使い方パネル -->
+    <section class="panel hidden" id="help-panel">
+
+      <div class="card help-section">
+        <h2>Play — 練習モード</h2>
+        <div class="help-step">
+          <div class="help-num">1</div>
+          <div class="help-step-body">
+            <div class="help-step-title">セットリストを選択</div>
+            <div class="help-step-desc">画面上部のドロップダウンから練習したいセットリストを選んでください。</div>
+          </div>
+        </div>
+        <div class="help-step">
+          <div class="help-num">2</div>
+          <div class="help-step-body">
+            <div class="help-step-title">START をタップして開始</div>
+            <div class="help-step-desc">ステージ中央の <span class="help-tag red">START</span> をタップすると練習が始まります。イントロ中は「ー intro ー」と表示されます。</div>
+          </div>
+        </div>
+        <div class="help-step">
+          <div class="help-num">3</div>
+          <div class="help-step-body">
+            <div class="help-step-title">歌詞を追う</div>
+            <div class="help-step-desc">歌詞は記録されたタイミングで自動的に切り替わります。<br>画面右タップで次の行、左タップで前の行に手動ジャンプできます。</div>
+          </div>
+        </div>
+        <div class="help-step">
+          <div class="help-num">4</div>
+          <div class="help-step-body">
+            <div class="help-step-title">虫食いモードで暗記練習</div>
+            <div class="help-step-desc">カード内の <span class="help-tag">Lv.1〜Lv.3</span> ボタンで虫食いモードを切り替え。◯をタップすると文字が表示されます。<br>Lv.1: 先頭3文字を表示、Lv.2: 先頭1文字、Lv.3: ランダム3パターン。</div>
+          </div>
+        </div>
+        <div class="help-step">
+          <div class="help-num">5</div>
+          <div class="help-step-body">
+            <div class="help-step-title">一時停止・停止</div>
+            <div class="help-step-desc"><span class="help-tag">一時停止</span> で中断・再開できます。<span class="help-tag red">停止</span> でセットリストの先頭曲に戻ります。</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card help-section">
+        <h2>Edit — 歌詞の記録</h2>
+        <div class="help-step">
+          <div class="help-num">1</div>
+          <div class="help-step-body">
+            <div class="help-step-title">曲を選択または新規追加</div>
+            <div class="help-step-desc">上部ドロップダウンで既存曲を選ぶか <span class="help-tag">＋ 新規追加</span> を選択。ファイル名が曲名の初期値になります。</div>
+          </div>
+        </div>
+        <div class="help-step">
+          <div class="help-num">2</div>
+          <div class="help-step-body">
+            <div class="help-step-title">音楽ファイルと歌詞を設定</div>
+            <div class="help-step-desc"><span class="help-tag">音楽ファイルを選択</span> で MP3 などを読み込みます。歌詞エリアに歌詞を1行ずつ貼り付けてください。</div>
+          </div>
+        </div>
+        <div class="help-step">
+          <div class="help-num">3</div>
+          <div class="help-step-body">
+            <div class="help-step-title">記録を開始</div>
+            <div class="help-step-desc"><span class="help-tag">記録を開始</span> を押すと音楽が再生されます。「ー intro ー」が表示されている間はイントロです。</div>
+          </div>
+        </div>
+        <div class="help-step">
+          <div class="help-num">4</div>
+          <div class="help-step-body">
+            <div class="help-step-title">歌詞に合わせてタップ</div>
+            <div class="help-step-desc"><span class="help-tag">次の歌詞へ...</span> を各歌詞の歌い出しに合わせてタップします。初回タップがイントロ終了・1行目開始として記録されます。</div>
+          </div>
+        </div>
+        <div class="help-step">
+          <div class="help-num">5</div>
+          <div class="help-step-body">
+            <div class="help-step-title">記録を保存</div>
+            <div class="help-step-desc"><span class="help-tag">記録を保存</span> でタイムスタンプと歌詞が保存されます。保存すると自動的に設定画面に戻ります。</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card help-section">
+        <h2>SetList — セットリスト管理</h2>
+        <div class="help-step">
+          <div class="help-num">1</div>
+          <div class="help-step-body">
+            <div class="help-step-title">新規作成</div>
+            <div class="help-step-desc">ドロップダウンで <span class="help-tag">＋ 新規追加</span> を選び、セットリスト名を入力して <span class="help-tag">SetListを保存</span> を押します。</div>
+          </div>
+        </div>
+        <div class="help-step">
+          <div class="help-num">2</div>
+          <div class="help-step-body">
+            <div class="help-step-title">曲を追加・並び替え</div>
+            <div class="help-step-desc">「曲を追加」のドロップダウンから曲を選んで <span class="help-tag">追加</span>。↑↓ ボタンで順番を変更、<span class="help-tag red">削除</span> で取り除けます。</div>
+          </div>
+        </div>
+        <div class="help-step">
+          <div class="help-num">3</div>
+          <div class="help-step-body">
+            <div class="help-step-title">保存・削除</div>
+            <div class="help-step-desc">変更後は必ず <span class="help-tag">SetListを保存</span> を押してください。既存セットリストを選択すると <span class="help-tag red">削除</span> ボタンが表示されます。</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="text-align:center;color:rgba(255,255,255,0.35);font-size:13px;padding:20px;">
+        データはすべてブラウザのローカルストレージに保存されます。<br>ブラウザのデータ消去で削除されます。
+      </div>
+
+    </section>
+
   </main>
 
   <!-- オーバーレイ: 練習開始 -->
@@ -299,8 +423,9 @@
   </div>
 
 
-  <footer style="padding:14px 16px;color:rgba(255,255,255,0.55);font-size:13px;border-top:1px solid rgba(255,255,255,0.08);">
+  <footer style="padding:14px 16px;color:rgba(255,255,255,0.55);font-size:13px;border-top:1px solid rgba(255,255,255,0.08);display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;">
     <div>操作: 画面の右/左をタップして行を手動ジャンプできます。再生停止時は自動送りとスクロールが停止します。</div>
+    <div style="color:rgba(255,255,255,0.3);font-size:12px;white-space:nowrap;">© Tanaka Workshop</div>
   </footer>
 
   <script>
@@ -308,9 +433,11 @@
     const tabRecord    = document.getElementById('tab-record');
     const tabPractice  = document.getElementById('tab-practice');
     const tabSetlist   = document.getElementById('tab-setlist');
+    const tabHelp      = document.getElementById('tab-help');
     const recordPanel  = document.getElementById('record-panel');
     const practicePanel= document.getElementById('practice-panel');
     const setlistPanel = document.getElementById('setlist-panel');
+    const helpPanel    = document.getElementById('help-panel');
 
     const practiceCurrent  = document.getElementById('practice-current');
     const practiceNext     = document.getElementById('practice-next');
@@ -605,9 +732,11 @@
       tabRecord.classList.toggle('active', mode==='record');
       tabPractice.classList.toggle('active', mode==='practice');
       tabSetlist.classList.toggle('active', mode==='setlist');
+      tabHelp.classList.toggle('active', mode==='help');
       recordPanel.classList.toggle('hidden', mode!=='record');
       practicePanel.classList.toggle('hidden', mode!=='practice');
       setlistPanel.classList.toggle('hidden', mode!=='setlist');
+      helpPanel.classList.toggle('hidden', mode!=='help');
       if(mode==='practice'){
         enterPracticeMode();
         requestWakeLock();
@@ -623,6 +752,7 @@
     tabRecord.addEventListener('click',  ()=>setActiveTab('record'));
     tabPractice.addEventListener('click', ()=>setActiveTab('practice'));
     tabSetlist.addEventListener('click',  ()=>setActiveTab('setlist'));
+    tabHelp.addEventListener('click',     ()=>setActiveTab('help'));
 
     /* ─── 歌詞入力 ─── */
     function updateLyricsFromTextarea(){
