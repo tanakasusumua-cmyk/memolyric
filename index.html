@@ -139,9 +139,12 @@
 
       <!-- 曲選択ドロップダウン -->
       <div class="card" style="padding:12px 14px;">
-        <select id="song-select-dropdown" style="width:100%;padding:10px;font-size:15px;font-weight:700;border-radius:8px;">
-          <option value="">＋ 新規追加</option>
-        </select>
+        <div style="display:flex;gap:10px;align-items:center;">
+          <select id="song-select-dropdown" style="flex:1;padding:10px;font-size:15px;font-weight:700;border-radius:8px;">
+            <option value="">＋ 新規追加</option>
+          </select>
+          <button id="delete-song-btn" class="ghost danger" style="display:none;white-space:nowrap;flex-shrink:0;">削除</button>
+        </div>
       </div>
 
       <div class="card" id="setup-card">
@@ -250,22 +253,22 @@
     <!-- セットリストパネル -->
     <section class="panel hidden" id="setlist-panel">
 
-      <!-- セットリスト選択・作成 -->
-      <div class="card">
-        <div class="setlist-section-title">セットリスト</div>
-        <div class="setlist-name-row">
-          <input type="text" id="new-setlist-name" placeholder="新しいセットリスト名">
-          <button id="create-setlist-btn" style="white-space:nowrap;flex-shrink:0;">新規作成</button>
-        </div>
-        <div style="margin-top:12px;">
-          <label>セットリストを選択</label>
-          <select id="setlist-select">
+      <!-- セットリスト選択（Editと統一レイアウト） -->
+      <div class="card" style="padding:12px 14px;">
+        <div style="display:flex;gap:10px;align-items:center;">
+          <select id="setlist-select" style="flex:1;padding:10px;font-size:15px;font-weight:700;border-radius:8px;">
             <option value="">— セットリストを選択 —</option>
           </select>
+          <button id="rename-setlist-btn" class="ghost secondary" style="white-space:nowrap;flex-shrink:0;">変更</button>
+          <button id="delete-setlist-btn" class="ghost danger" style="white-space:nowrap;flex-shrink:0;">削除</button>
         </div>
-        <div class="controls">
-          <button id="rename-setlist-btn" class="ghost secondary">名前を変更</button>
-          <button id="delete-setlist-btn" class="ghost danger">削除</button>
+      </div>
+
+      <!-- 新規作成 -->
+      <div class="card" style="padding:12px 14px;">
+        <div style="display:flex;gap:10px;align-items:center;">
+          <input type="text" id="new-setlist-name" placeholder="新しいセットリスト名" style="flex:1;">
+          <button id="create-setlist-btn" style="white-space:nowrap;flex-shrink:0;">新規作成</button>
         </div>
       </div>
 
@@ -535,8 +538,36 @@
       if(obj.audioFileName) audioFilename.textContent=`前回: ${obj.audioFileName}`;
     }
 
+    const deleteSongBtn=document.getElementById('delete-song-btn');
+
+    function updateDeleteSongBtn(){
+      const key=document.getElementById('song-select-dropdown').value;
+      deleteSongBtn.style.display=key?'':'none';
+    }
+
+    deleteSongBtn.addEventListener('click',()=>{
+      const key=document.getElementById('song-select-dropdown').value;
+      if(!key) return;
+      if(!confirm(`「${getSongTitle(key)}」を削除しますか？`)) return;
+      localStorage.removeItem(key);
+      titleInput.value='';
+      lyricsInput.value='';
+      lyricsLines=[];
+      linesCount.textContent='行: 0';
+      audioPlayer.removeAttribute('src');audioPlayer.load();
+      audioFile=null;audioFilename.textContent='';
+      const lbl=document.getElementById('file-select-label');
+      if(lbl){lbl.textContent='音楽ファイルを選択';lbl.classList.remove('has-file');}
+      setupCard.style.display='block';
+      recordCard.style.display='none';
+      refreshSavedList();
+      refreshSetlistSelect();
+      renderSetlistDetail();
+    });
+
     document.getElementById('song-select-dropdown').addEventListener('change',()=>{
       const key=document.getElementById('song-select-dropdown').value;
+      updateDeleteSongBtn();
       if(!key){
         titleInput.value='';
         audioFileInput.value='';
@@ -732,6 +763,7 @@
       recordCard.style.display='none';
       refreshSavedList();
       document.getElementById('song-select-dropdown').value=key;
+      updateDeleteSongBtn();
       alert('記録を保存しました: '+title);
     });
 
