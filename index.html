@@ -302,6 +302,17 @@
       <!-- 保存ボタン -->
       <button id="save-setlist-btn" style="width:100%;">SetListを保存</button>
 
+      <!-- バックアップ・リストア -->
+      <div class="card" style="padding:12px 14px;">
+        <div class="setlist-section-title">データのバックアップ / リストア</div>
+        <div style="display:flex;gap:10px;">
+          <button id="backup-btn" class="ghost secondary" style="flex:1;">バックアップ</button>
+          <button id="restore-btn" class="ghost secondary" style="flex:1;">リストア</button>
+        </div>
+        <input type="file" id="restore-file-input" accept=".json" style="display:none;">
+        <div class="muted" style="margin-top:8px;font-size:12px;">バックアップ: 全曲・全セットリストをJSONファイルで保存。リストア: 同一名のデータは上書きされます。</div>
+      </div>
+
     </section>
     <!-- 使い方パネル -->
     <section class="panel hidden" id="help-panel">
@@ -1449,6 +1460,68 @@
 
     /* 後方互換: renderSetlistDetail は loadWorkingSetlist にエイリアス */
     function renderSetlistDetail(){ loadWorkingSetlist(setlistSelect.value); }
+
+    /* ─── バックアップ / リストア ─── */
+    document.getElementById('backup-btn').addEventListener('click',()=>{
+      const songs={};
+      getSongKeys().forEach(k=>{
+        try{songs[k]=JSON.parse(localStorage.getItem(k));}catch{}
+      });
+      const data={version:1,exportedAt:new Date().toISOString(),songs,setlists:loadSetlists()};
+      const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      a.href=url;
+      const d=new Date();
+      a.download=`memolyric_backup_${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    document.getElementById('restore-btn').addEventListener('click',()=>{
+      document.getElementById('restore-file-input').click();
+    });
+
+    document.getElementById('restore-file-input').addEventListener('change',(e)=>{
+      const file=e.target.files[0];
+      if(!file) return;
+      const reader=new FileReader();
+      reader.onload=(ev)=>{
+        try{
+          const data=JSON.parse(ev.target.result);
+          if(!data.songs && !data.setlists) throw new Error('invalid');
+
+          // 曲を復元（同一キー=同一曲名は上書き）
+          if(data.songs){
+            Object.entries(data.songs).forEach(([key,val])=>{
+              if(key.startsWith('memolyric_') && val) localStorage.setItem(key,JSON.stringify(val));
+            });
+          }
+
+          // セットリストを復元（同一名は上書き）
+          if(Array.isArray(data.setlists)){
+            const existing=loadSetlists();
+            data.setlists.forEach(sl=>{
+              const idx=existing.findIndex(s=>s.name===sl.name);
+              if(idx>=0) existing[idx]=sl;
+              else existing.push(sl);
+            });
+            saveSetlists(existing);
+          }
+
+          refreshSavedList();
+          refreshSetlistSelect();
+          loadWorkingSetlist('');
+          setlistSelect.value='';
+          refreshPracticeSetlistSelect();
+          alert('リストアが完了しました。');
+        }catch{
+          alert('読み込みに失敗しました。正しいバックアップファイルを選択してください。');
+        }
+        e.target.value='';
+      };
+      reader.readAsText(file);
+    });
 
     /* ═══════════════════════════════════════════
        スリープ防止 (Wake Lock API)
