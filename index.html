@@ -1180,6 +1180,14 @@
       updatePracticeView();
     }
 
+    // iOS ダブルタップズーム抑止
+    let lastPracticeTap = 0;
+    document.getElementById('practice-stage').addEventListener('touchstart',(ev)=>{
+      const now = Date.now();
+      if(now - lastPracticeTap < 350) ev.preventDefault();
+      lastPracticeTap = now;
+    },{passive:false});
+
     practiceTapLayer.addEventListener('pointerdown',(ev)=>{
       ev.preventDefault();
       // 虫食いモード: タップ位置の下にある .musokui-char を判定
