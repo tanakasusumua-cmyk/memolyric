@@ -63,8 +63,8 @@
     .log{flex:1;overflow:auto;padding:12px;background:rgba(255,255,255,0.02);border-radius:10px;font-family:Menlo,monospace;font-size:13px;min-height:180px;}
     .log-item{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.04);}
     .preview{font-size:22px;color:var(--neon);text-align:center;padding:12px;}
-    .tap-zone{flex:1;display:flex;align-items:center;justify-content:center;border-radius:12px;background:linear-gradient(180deg, rgba(0,255,204,0.04), rgba(124,77,255,0.03));margin:8px 0;min-height:120px;}
-    .tap-zone button{all:unset;width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:32px;color:var(--fg);cursor:pointer;}
+    .tap-zone{display:flex;align-items:center;justify-content:center;border-radius:12px;background:linear-gradient(180deg, rgba(0,255,204,0.04), rgba(124,77,255,0.03));margin:8px 0;height:300px;}
+    .tap-zone button{all:unset;width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:#000;background:var(--neon);border-radius:12px;cursor:pointer;letter-spacing:.04em;-webkit-user-select:none;user-select:none;}
     .audio-meta{margin-top:8px;color:rgba(255,255,255,0.55);font-size:13px;}
     .file-select-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;box-sizing:border-box;padding:18px 16px;background:rgba(0,255,204,0.07);border:2px dashed rgba(0,255,204,0.35);border-radius:12px;color:var(--neon);font-size:16px;font-weight:700;cursor:pointer;text-align:center;letter-spacing:.02em;transition:background .15s;-webkit-user-select:none;user-select:none;}
     .file-select-btn:active{background:rgba(0,255,204,0.18);}
@@ -182,7 +182,7 @@
         <div class="preview" id="next-preview">— 次のフレーズ —</div>
 
         <div class="tap-zone" id="tap-zone">
-          <button id="tap-btn">Next...</button>
+          <button id="tap-btn">次の歌詞へ...</button>
         </div>
 
         <div>
@@ -192,7 +192,7 @@
 
         <div class="controls" style="justify-content:flex-end;">
           <button id="save-record">記録を保存</button>
-          <button id="back-setup" class="ghost secondary">設定に戻る</button>
+          <button id="back-setup" class="ghost secondary">キャンセル</button>
         </div>
       </div>
     </section>
@@ -253,34 +253,27 @@
     <!-- セットリストパネル -->
     <section class="panel hidden" id="setlist-panel">
 
-      <!-- セットリスト選択（Editと統一レイアウト） -->
+      <!-- 選択（Editと統一レイアウト） -->
       <div class="card" style="padding:12px 14px;">
         <div style="display:flex;gap:10px;align-items:center;">
           <select id="setlist-select" style="flex:1;padding:10px;font-size:15px;font-weight:700;border-radius:8px;">
-            <option value="">— セットリストを選択 —</option>
+            <option value="">＋ 新規追加</option>
           </select>
-          <button id="rename-setlist-btn" class="ghost secondary" style="white-space:nowrap;flex-shrink:0;">変更</button>
-          <button id="delete-setlist-btn" class="ghost danger" style="white-space:nowrap;flex-shrink:0;">削除</button>
+          <button id="delete-setlist-btn" class="ghost danger" style="display:none;white-space:nowrap;flex-shrink:0;">削除</button>
         </div>
       </div>
 
-      <!-- 新規作成 -->
-      <div class="card" style="padding:12px 14px;">
-        <div style="display:flex;gap:10px;align-items:center;">
-          <input type="text" id="new-setlist-name" placeholder="新しいセットリスト名" style="flex:1;">
-          <button id="create-setlist-btn" style="white-space:nowrap;flex-shrink:0;">新規作成</button>
-        </div>
-      </div>
+      <!-- 編集フォーム -->
+      <div class="card">
+        <label>セットリスト名</label>
+        <input type="text" id="setlist-name-input" placeholder="セットリスト名を入力">
 
-      <!-- 選択中セットリストの内容 -->
-      <div class="card" id="setlist-detail-card" style="display:none;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-          <div class="setlist-section-title" style="margin-bottom:0;" id="setlist-detail-title">曲リスト</div>
-          <span id="setlist-song-count" class="muted" style="font-size:12px;"></span>
+        <div style="margin-top:16px;">
+          <div class="setlist-section-title">曲リスト</div>
+          <div id="setlist-song-list" class="setlist-song-list"></div>
+          <div id="setlist-song-empty" class="setlist-empty" style="display:none;">曲がありません。下から追加してください。</div>
         </div>
-        <div id="setlist-song-list" class="setlist-song-list"></div>
 
-        <!-- 曲を追加 -->
         <div style="margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.07);">
           <div class="setlist-section-title">曲を追加</div>
           <div class="row" style="gap:10px;">
@@ -292,9 +285,9 @@
         </div>
       </div>
 
-      <div class="card" id="setlist-empty-hint" style="text-align:center;color:rgba(255,255,255,0.35);font-size:14px;padding:28px;">
-        セットリストを選択するか、新規作成してください。
-      </div>
+      <!-- 保存ボタン -->
+      <button id="save-setlist-btn" style="width:100%;">SetListを保存</button>
+
     </section>
   </main>
 
@@ -622,6 +615,9 @@
         document.getElementById('practice-start-overlay').style.display='none';
         pausePracticeAudio();
       }
+      if(mode!=='record'){
+        audioPlayer.pause();
+      }
     }
 
     tabRecord.addEventListener('click',  ()=>setActiveTab('record'));
@@ -713,7 +709,8 @@
     });
 
     backSetupBtn.addEventListener('click',()=>{
-      hideRecordStartOverlay();
+      audioPlayer.pause();
+      audioPlayer.currentTime=0;
       setupCard.style.display='block';
       recordCard.style.display='none';
     });
@@ -1184,14 +1181,14 @@
     function refreshSetlistSelect(){
       const prev=setlistSelect.value;
       const setlists=loadSetlists();
-      setlistSelect.innerHTML='<option value="">— セットリストを選択 —</option>';
+      setlistSelect.innerHTML='<option value="">＋ 新規追加</option>';
       setlists.forEach(sl=>{
         const opt=document.createElement('option');
         opt.value=sl.id;
         opt.textContent=sl.name+(sl.songs.length>0?` (${sl.songs.length}曲)`:'');
         setlistSelect.appendChild(opt);
       });
-      if(prev) setlistSelect.value=prev;
+      if(prev && loadSetlists().some(s=>s.id===prev)) setlistSelect.value=prev;
     }
 
     /* 追加用曲選択ドロップダウン更新 */
@@ -1207,178 +1204,118 @@
       });
     }
 
-    /* セットリスト詳細レンダリング */
-    function renderSetlistDetail(){
-      const id=setlistSelect.value;
-      const detailCard=document.getElementById('setlist-detail-card');
-      const emptyHint=document.getElementById('setlist-empty-hint');
+    /* ─── workingSetlist（作業中コピー） ─── */
+    let workingSetlist={id:null,name:'',songs:[]};
 
+    function loadWorkingSetlist(id){
       if(!id){
-        detailCard.style.display='none';
-        emptyHint.style.display='block';
-        return;
+        workingSetlist={id:null,name:'',songs:[]};
+      } else {
+        const sl=loadSetlists().find(s=>s.id===id);
+        workingSetlist=sl?{id:sl.id,name:sl.name,songs:[...sl.songs]}:{id:null,name:'',songs:[]};
       }
+      document.getElementById('setlist-name-input').value=workingSetlist.name;
+      document.getElementById('delete-setlist-btn').style.display=workingSetlist.id?'':'none';
+      renderWorkingSongList();
+    }
 
-      const setlists=loadSetlists();
-      const sl=setlists.find(s=>s.id===id);
-      if(!sl){
-        detailCard.style.display='none';
-        emptyHint.style.display='block';
-        return;
-      }
-
-      detailCard.style.display='block';
-      emptyHint.style.display='none';
-
-      document.getElementById('setlist-detail-title').textContent=sl.name;
-      document.getElementById('setlist-song-count').textContent=`${sl.songs.length}曲`;
-
+    function renderWorkingSongList(){
       const list=document.getElementById('setlist-song-list');
+      const empty=document.getElementById('setlist-song-empty');
       list.innerHTML='';
-
-      if(sl.songs.length===0){
-        const empty=document.createElement('div');
-        empty.className='setlist-empty';
-        empty.textContent='曲がありません。下から曲を追加してください。';
-        list.appendChild(empty);
+      if(workingSetlist.songs.length===0){
+        empty.style.display='block';
         return;
       }
-
-      sl.songs.forEach((key,i)=>{
-        const title=getSongTitle(key);
+      empty.style.display='none';
+      workingSetlist.songs.forEach((key,i)=>{
         const item=document.createElement('div');
         item.className='setlist-song-item';
 
-        const num=document.createElement('span');
-        num.className='setlist-song-num';
-        num.textContent=i+1;
+        const num=document.createElement('span');num.className='setlist-song-num';num.textContent=i+1;
 
-        const name=document.createElement('span');
-        name.className='setlist-song-name';
-        name.textContent=title;
+        const name=document.createElement('span');name.className='setlist-song-name';name.textContent=getSongTitle(key);
 
-        const actions=document.createElement('div');
-        actions.className='setlist-song-actions';
+        const actions=document.createElement('div');actions.className='setlist-song-actions';
 
         const upBtn=document.createElement('button');
-        upBtn.className='ghost secondary';
-        upBtn.textContent='↑';
-        upBtn.disabled=i===0;
-        upBtn.style.opacity=i===0?'0.3':'1';
-        upBtn.addEventListener('click',()=>moveSong(id,i,-1));
+        upBtn.className='ghost secondary';upBtn.textContent='↑';
+        upBtn.disabled=i===0;upBtn.style.opacity=i===0?'0.3':'1';
+        upBtn.addEventListener('click',()=>{
+          if(i===0) return;
+          [workingSetlist.songs[i],workingSetlist.songs[i-1]]=[workingSetlist.songs[i-1],workingSetlist.songs[i]];
+          renderWorkingSongList();
+        });
 
         const downBtn=document.createElement('button');
-        downBtn.className='ghost secondary';
-        downBtn.textContent='↓';
-        downBtn.disabled=i===sl.songs.length-1;
-        downBtn.style.opacity=i===sl.songs.length-1?'0.3':'1';
-        downBtn.addEventListener('click',()=>moveSong(id,i,1));
+        downBtn.className='ghost secondary';downBtn.textContent='↓';
+        downBtn.disabled=i===workingSetlist.songs.length-1;downBtn.style.opacity=i===workingSetlist.songs.length-1?'0.3':'1';
+        downBtn.addEventListener('click',()=>{
+          if(i>=workingSetlist.songs.length-1) return;
+          [workingSetlist.songs[i],workingSetlist.songs[i+1]]=[workingSetlist.songs[i+1],workingSetlist.songs[i]];
+          renderWorkingSongList();
+        });
 
         const removeBtn=document.createElement('button');
-        removeBtn.className='ghost danger';
-        removeBtn.textContent='削除';
-        removeBtn.addEventListener('click',()=>removeSongFromSetlist(id,i));
+        removeBtn.className='ghost danger';removeBtn.textContent='削除';
+        removeBtn.addEventListener('click',()=>{
+          workingSetlist.songs.splice(i,1);
+          renderWorkingSongList();
+        });
 
-        actions.appendChild(upBtn);
-        actions.appendChild(downBtn);
-        actions.appendChild(removeBtn);
-        item.appendChild(num);
-        item.appendChild(name);
-        item.appendChild(actions);
+        actions.appendChild(upBtn);actions.appendChild(downBtn);actions.appendChild(removeBtn);
+        item.appendChild(num);item.appendChild(name);item.appendChild(actions);
         list.appendChild(item);
       });
     }
 
-    function moveSong(setlistId, index, direction){
-      const setlists=loadSetlists();
-      const sl=setlists.find(s=>s.id===setlistId);
-      if(!sl) return;
-      const newIndex=index+direction;
-      if(newIndex<0||newIndex>=sl.songs.length) return;
-      const tmp=sl.songs[index];
-      sl.songs[index]=sl.songs[newIndex];
-      sl.songs[newIndex]=tmp;
-      saveSetlists(setlists);
-      refreshSetlistSelect();
-      renderSetlistDetail();
-    }
+    /* セットリスト選択変更 */
+    setlistSelect.addEventListener('change',()=>loadWorkingSetlist(setlistSelect.value));
 
-    function removeSongFromSetlist(setlistId, index){
-      const setlists=loadSetlists();
-      const sl=setlists.find(s=>s.id===setlistId);
-      if(!sl) return;
-      sl.songs.splice(index,1);
-      saveSetlists(setlists);
-      refreshSetlistSelect();
-      renderSetlistDetail();
-    }
-
-    /* 新規セットリスト作成 */
-    document.getElementById('create-setlist-btn').addEventListener('click',()=>{
-      const nameInput=document.getElementById('new-setlist-name');
-      const name=nameInput.value.trim();
-      if(!name){alert('セットリスト名を入力してください');return;}
-      const setlists=loadSetlists();
-      if(setlists.some(s=>s.name===name)){
-        if(!confirm(`「${name}」という名前のセットリストが既に存在します。別の名前を使用しますか？`)) return;
-      }
-      const newSl={id:genId(),name,songs:[]};
-      setlists.push(newSl);
-      saveSetlists(setlists);
-      nameInput.value='';
-      refreshSetlistSelect();
-      refreshPracticeSetlistSelect();
-      setlistSelect.value=newSl.id;
-      renderSetlistDetail();
+    /* 曲を追加（作業コピーに追加するだけ） */
+    document.getElementById('add-song-btn').addEventListener('click',()=>{
+      const songKey=document.getElementById('add-song-select').value;
+      if(!songKey){alert('追加する曲を選択してください');return;}
+      workingSetlist.songs.push(songKey);
+      renderWorkingSongList();
     });
 
-    /* 名前変更 */
-    document.getElementById('rename-setlist-btn').addEventListener('click',()=>{
-      const id=setlistSelect.value;
-      if(!id){alert('セットリストを選択してください');return;}
+    /* SetListを保存 */
+    document.getElementById('save-setlist-btn').addEventListener('click',()=>{
+      const name=document.getElementById('setlist-name-input').value.trim();
+      if(!name){alert('セットリスト名を入力してください');return;}
       const setlists=loadSetlists();
-      const sl=setlists.find(s=>s.id===id);
-      if(!sl) return;
-      const newName=prompt('新しいセットリスト名を入力してください',sl.name);
-      if(!newName||!newName.trim()) return;
-      sl.name=newName.trim();
+      if(workingSetlist.id){
+        const sl=setlists.find(s=>s.id===workingSetlist.id);
+        if(sl){sl.name=name;sl.songs=[...workingSetlist.songs];}
+      } else {
+        const newId=genId();
+        workingSetlist.id=newId;
+        setlists.push({id:newId,name,songs:[...workingSetlist.songs]});
+      }
+      workingSetlist.name=name;
       saveSetlists(setlists);
       refreshSetlistSelect();
-      renderSetlistDetail();
+      refreshPracticeSetlistSelect();
+      setlistSelect.value=workingSetlist.id;
+      document.getElementById('delete-setlist-btn').style.display='';
+      alert('保存しました: '+name);
     });
 
     /* セットリスト削除 */
     document.getElementById('delete-setlist-btn').addEventListener('click',()=>{
-      const id=setlistSelect.value;
-      if(!id){alert('削除するセットリストを選択してください');return;}
-      const setlists=loadSetlists();
-      const sl=setlists.find(s=>s.id===id);
-      if(!sl) return;
-      if(!confirm(`セットリスト「${sl.name}」を削除しますか？`)) return;
-      const updated=setlists.filter(s=>s.id!==id);
+      if(!workingSetlist.id) return;
+      if(!confirm(`セットリスト「${workingSetlist.name}」を削除しますか？`)) return;
+      const updated=loadSetlists().filter(s=>s.id!==workingSetlist.id);
       saveSetlists(updated);
       refreshSetlistSelect();
       refreshPracticeSetlistSelect();
-      renderSetlistDetail();
+      loadWorkingSetlist('');
+      setlistSelect.value='';
     });
 
-    /* 曲を追加 */
-    document.getElementById('add-song-btn').addEventListener('click',()=>{
-      const id=setlistSelect.value;
-      if(!id){alert('セットリストを選択してください');return;}
-      const songKey=document.getElementById('add-song-select').value;
-      if(!songKey){alert('追加する曲を選択してください');return;}
-      const setlists=loadSetlists();
-      const sl=setlists.find(s=>s.id===id);
-      if(!sl) return;
-      sl.songs.push(songKey);
-      saveSetlists(setlists);
-      refreshSetlistSelect();
-      renderSetlistDetail();
-    });
-
-    /* セットリスト選択変更 */
-    setlistSelect.addEventListener('change', renderSetlistDetail);
+    /* 後方互換: renderSetlistDetail は loadWorkingSetlist にエイリアス */
+    function renderSetlistDetail(){ loadWorkingSetlist(setlistSelect.value); }
 
     /* ═══════════════════════════════════════════
        スリープ防止 (Wake Lock API)
@@ -1450,6 +1387,7 @@
     updateWakeLockBtn();
     refreshSavedList(); // refreshSongDropdown も内部で呼ばれる
     refreshSetlistSelect();
+    loadWorkingSetlist('');
     refreshPracticeSetlistSelect();
     updateLyricsFromTextarea();
     setActiveTab('practice');
