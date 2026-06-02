@@ -13,6 +13,7 @@
       --panel:#111111;
       --border:rgba(255,255,255,0.08);
     }
+    *{touch-action:manipulation;}
     html,body{height:100%;}
     body{
       margin:0;
@@ -79,7 +80,7 @@
     .practice-controls{display:flex;gap:12px;flex-wrap:wrap;justify-content:space-between;align-items:center;}
     .practice-instruction{color:rgba(255,255,255,0.65);font-size:14px;}
     .practice-stage{min-height:200px;}
-    .practice-tap-layer{position:absolute;inset:0;display:flex;touch-action:manipulation;}
+    .practice-tap-layer{position:absolute;inset:0;display:flex;touch-action:none;}
     .practice-side{flex:1;transition:background .15s;touch-action:manipulation;-webkit-user-select:none;user-select:none;}
     .practice-side[data-side="left"]{background:linear-gradient(to right,rgba(0,255,204,0.10),transparent);}
     .practice-side[data-side="right"]{background:linear-gradient(to left,rgba(0,255,204,0.10),transparent);}
@@ -425,7 +426,7 @@
 
 
   <footer style="padding:14px 16px;color:rgba(255,255,255,0.55);font-size:13px;border-top:1px solid rgba(255,255,255,0.08);display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;">
-    <div>操作: 画面の右/左をタップして行を手動ジャンプできます。再生停止時は自動送りとスクロールが停止します。</div>
+    <div id="footer-play-hint" style="display:none;">操作: 画面の右/左をタップして行を手動ジャンプできます。再生停止時は自動送りとスクロールが停止します。</div>
     <div style="color:rgba(255,255,255,0.3);font-size:12px;white-space:nowrap;">© Tanaka Workshop</div>
   </footer>
 
@@ -738,6 +739,7 @@
       practicePanel.classList.toggle('hidden', mode!=='practice');
       setlistPanel.classList.toggle('hidden', mode!=='setlist');
       helpPanel.classList.toggle('hidden', mode!=='help');
+      document.getElementById('footer-play-hint').style.display = mode==='practice' ? '' : 'none';
       if(mode==='practice'){
         enterPracticeMode();
         requestWakeLock();
