@@ -81,6 +81,10 @@
     .practice-side[data-side="left"]{background:linear-gradient(to right,rgba(0,255,204,0.10),transparent);}
     .practice-side[data-side="right"]{background:linear-gradient(to left,rgba(0,255,204,0.10),transparent);}
     .practice-side::after{content:' ';display:block;height:100%;}
+    .musokui-char{color:rgba(255,255,255,0.22);cursor:pointer;transition:color .2s;}
+    .musokui-char.revealed{color:var(--neon);}
+    .musokui-toggle-btn{padding:6px 16px;font-size:13px;font-weight:700;border-radius:999px;background:transparent;color:rgba(255,255,255,0.4);border:1px solid rgba(255,255,255,0.15);cursor:pointer;transition:all .2s;}
+    .musokui-toggle-btn.on{background:rgba(0,255,204,0.15);color:var(--neon);border-color:rgba(0,255,204,0.4);}
 
     /* セットリスト */
     .setlist-section-title{font-size:13px;font-weight:700;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;}
@@ -196,6 +200,12 @@
             <div id="practice-setlist-progress" style="font-size:12px;color:rgba(255,255,255,0.5);text-align:center;"></div>
             <button id="next-song-btn" class="ghost secondary" style="padding:8px 12px;font-size:13px;flex-shrink:0;">次 →</button>
           </div>
+        </div>
+
+        <!-- 虫食いモード切り替え -->
+        <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:space-between;gap:10px;">
+          <span class="muted" style="font-size:13px;">虫食いモード（暗記練習）</span>
+          <button id="musokui-toggle" class="musokui-toggle-btn">OFF</button>
         </div>
       </div>
 
@@ -346,6 +356,51 @@
     let practiceAnimation     = null;
     let timerStartWall        = 0;
     let timerAccumulated      = 0;
+
+    /* ─── 虫食いモード ─── */
+    let musokuiMode = false;
+    let musokuiHiddenSet = new Set();
+    const MUSOKUI_SKIP = new Set([
+      ' ','　','、','。','！','？','!','?','・','…','〜','ー',
+      '（','）','(',')','"','"','「','」','『','』','【','】',
+      '〈','〉','—','-','/','\n'
+    ]);
+
+    function escapeHtml(s){
+      return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function renderCurrentLine(text){
+      if(!musokuiMode || !text){
+        practiceCurrent.textContent = text || '—';
+        return;
+      }
+      const chars = [...text];
+      const candidates = [];
+      chars.forEach((c,i)=>{ if(!MUSOKUI_SKIP.has(c)) candidates.push(i); });
+      const hideCount = Math.max(1, Math.round(candidates.length * 0.3));
+      const shuffled = [...candidates].sort(()=>Math.random()-0.5);
+      musokuiHiddenSet = new Set(shuffled.slice(0, hideCount));
+      const html = chars.map((c,i)=>{
+        if(musokuiHiddenSet.has(i)){
+          return `<span class="musokui-char" data-char="${escapeHtml(c)}">◯</span>`;
+        }
+        return escapeHtml(c);
+      }).join('');
+      practiceCurrent.innerHTML = html;
+    }
+
+    function updateMusokuiBtn(){
+      const btn = document.getElementById('musokui-toggle');
+      if(!btn) return;
+      if(musokuiMode){
+        btn.textContent='ON';
+        btn.classList.add('on');
+      } else {
+        btn.textContent='OFF';
+        btn.classList.remove('on');
+      }
+    }
 
     /* ─── Helpers ─── */
     function formatTime(t){
@@ -710,6 +765,7 @@
     document.getElementById('practice-start-btn').addEventListener('pointerdown',(ev)=>{
       ev.preventDefault();ev.stopPropagation();
       if(!practiceData) return;
+      requestWakeLock();
       playFromStart=false;practicePaused=false;
       practiceLine=0;lineDurationMs=getLineDurationMs(0);
       lineStartWall=performance.now();practiceStarted=true;
@@ -784,7 +840,8 @@
     function updatePracticeView(){
       const text=practiceData.lyrics[practiceLine]||'';
       const nextText=practiceData.lyrics[practiceLine+1]||'—';
-      practiceCurrent.textContent=text||'—';
+      musokuiHiddenSet=new Set();
+      renderCurrentLine(text);
       practiceNext.textContent=nextText;
       practiceCurrent.style.transform='translateY(0)';
       practiceCurrent.style.marginTop='0';
@@ -867,12 +924,33 @@
 
     practiceTapLayer.addEventListener('pointerdown',(ev)=>{
       ev.preventDefault();
+      // 虫食いモード: タップ位置の下にある .musokui-char を判定
+      if(musokuiMode){
+        practiceTapLayer.style.pointerEvents='none';
+        const el=document.elementFromPoint(ev.clientX,ev.clientY);
+        practiceTapLayer.style.pointerEvents='';
+        if(el && el.classList.contains('musokui-char') && !el.classList.contains('revealed')){
+          el.textContent=el.dataset.char;
+          el.classList.add('revealed');
+          return;
+        }
+      }
       if(!practiceStarted) return;
       const rect=practiceTapLayer.getBoundingClientRect();
       const x=ev.clientX-rect.left;
       const side=x>rect.width/2?'right':'left';
       if(side==='right') jumpPracticeLine(practiceLine+1,true);
       else jumpPracticeLine(practiceLine-1,true);
+    });
+
+    document.getElementById('musokui-toggle').addEventListener('click',()=>{
+      musokuiMode=!musokuiMode;
+      updateMusokuiBtn();
+      // 練習中なら現在行を即再描画
+      if(practiceStarted && practiceData){
+        musokuiHiddenSet=new Set();
+        renderCurrentLine(practiceData.lyrics[practiceLine]||'');
+      }
     });
 
     /* ═══════════════════════════════════════════
@@ -1242,9 +1320,17 @@
       }
     });
 
+    // iOS BFCache（戻る/進む）からの復帰にも対応
+    window.addEventListener('pageshow', (e) => {
+      if (e.persisted && wakeLockDesired && !wakeLock) {
+        requestWakeLock();
+      }
+    });
+
     // 練習モード開始時に自動 ON (setActiveTab から呼ばれる)
 
     /* ─── 初期化 ─── */
+    updateWakeLockBtn();
     refreshSavedList();
     refreshSetlistSelect();
     refreshPracticeSetlistSelect();
