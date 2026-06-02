@@ -376,11 +376,22 @@
         return;
       }
       const chars = [...text];
-      const candidates = [];
-      chars.forEach((c,i)=>{ if(!MUSOKUI_SKIP.has(c)) candidates.push(i); });
-      const hideCount = Math.max(1, Math.round(candidates.length * 0.3));
-      const shuffled = [...candidates].sort(()=>Math.random()-0.5);
-      musokuiHiddenSet = new Set(shuffled.slice(0, hideCount));
+      // スキップ対象以外の文字インデックス一覧
+      const contentIdx = chars.map((c,i)=>MUSOKUI_SKIP.has(c)?null:i).filter(i=>i!==null);
+
+      // 3パターンをランダム選択
+      // 0: 全部虫食い  1: 先頭1文字を残す  2: 最後3文字を残す
+      const pattern = Math.floor(Math.random()*3);
+      let showSet = new Set();
+      if(pattern===1 && contentIdx.length>0){
+        showSet.add(contentIdx[0]);
+      } else if(pattern===2){
+        contentIdx.slice(-3).forEach(i=>showSet.add(i));
+      }
+      // pattern===0 は showSet が空のまま（全部虫食い）
+
+      musokuiHiddenSet = new Set(contentIdx.filter(i=>!showSet.has(i)));
+
       const html = chars.map((c,i)=>{
         if(musokuiHiddenSet.has(i)){
           return `<span class="musokui-char" data-char="${escapeHtml(c)}">◯</span>`;
