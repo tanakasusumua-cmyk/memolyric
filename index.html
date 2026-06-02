@@ -206,7 +206,7 @@
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
           <span class="muted" style="white-space:nowrap;font-size:12px;">セットリスト:</span>
           <select id="practice-setlist-select" style="flex:1;min-width:120px;padding:8px 10px;font-size:13px;">
-            <option value="">— セットリストを選択 —</option>
+            <option value="">＋ 新規追加</option>
           </select>
         </div>
 
@@ -1086,7 +1086,7 @@
       const sel=document.getElementById('practice-setlist-select');
       const prev=sel.value;
       const setlists=loadSetlists();
-      sel.innerHTML='<option value="">— セットリストを選択 —</option>';
+      sel.innerHTML='<option value="">＋ 新規追加</option>';
       setlists.forEach(sl=>{
         const opt=document.createElement('option');
         opt.value=sl.id;
